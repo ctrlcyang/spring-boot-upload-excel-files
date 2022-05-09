@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -15,12 +16,12 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.bezkoder.spring.files.excel.model.Tutorial;
+import com.bezkoder.spring.files.excel.model.DcReturnList;
 
 public class ExcelHelper {
   public static String TYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-  static String[] HEADERs = { "Id", "Title", "Description", "Published" };
-  static String SHEET = "Tutorials";
+  static String[] HEADERs = { "dc_no", "sup_no", "box_qty", "created_date" };
+  static String SHEET = "dc_return_list";
 
   public static boolean hasExcelFormat(MultipartFile file) {
 
@@ -31,9 +32,9 @@ public class ExcelHelper {
     return true;
   }
 
-  public static ByteArrayInputStream tutorialsToExcel(List<Tutorial> tutorials) {
+  public static ByteArrayInputStream dcReturnListsToExcel(List<DcReturnList> dcReturnLists) {
 
-    try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream();) {
+    try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
       Sheet sheet = workbook.createSheet(SHEET);
 
       // Header
@@ -45,13 +46,14 @@ public class ExcelHelper {
       }
 
       int rowIdx = 1;
-      for (Tutorial tutorial : tutorials) {
+      for (DcReturnList dcReturnList : dcReturnLists) {
         Row row = sheet.createRow(rowIdx++);
 
-        row.createCell(0).setCellValue(tutorial.getId());
-        row.createCell(1).setCellValue(tutorial.getTitle());
-        row.createCell(2).setCellValue(tutorial.getDescription());
-        row.createCell(3).setCellValue(tutorial.isPublished());
+        row.createCell(0).setCellValue(dcReturnList.getDcNo());
+        row.createCell(1).setCellValue(dcReturnList.getSupNo());
+        row.createCell(2).setCellValue(dcReturnList.getBoxQty());
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+        row.createCell(3).setCellValue( sdf.format(dcReturnList.getCreatedDate()));
       }
 
       workbook.write(out);
@@ -61,14 +63,14 @@ public class ExcelHelper {
     }
   }
 
-  public static List<Tutorial> excelToTutorials(InputStream is) {
+  public static List<DcReturnList> excelToDcReturnLists(InputStream is) {
     try {
       Workbook workbook = new XSSFWorkbook(is);
 
       Sheet sheet = workbook.getSheet(SHEET);
       Iterator<Row> rows = sheet.iterator();
 
-      List<Tutorial> tutorials = new ArrayList<Tutorial>();
+      List<DcReturnList> dcReturnLists = new ArrayList<DcReturnList>();
 
       int rowNumber = 0;
       while (rows.hasNext()) {
@@ -82,7 +84,7 @@ public class ExcelHelper {
 
         Iterator<Cell> cellsInRow = currentRow.iterator();
 
-        Tutorial tutorial = new Tutorial();
+        DcReturnList dcReturnList = new DcReturnList();
 
         int cellIdx = 0;
         while (cellsInRow.hasNext()) {
@@ -90,19 +92,19 @@ public class ExcelHelper {
 
           switch (cellIdx) {
           case 0:
-            tutorial.setId((long) currentCell.getNumericCellValue());
+            dcReturnList.setDcNo((int) currentCell.getNumericCellValue());
             break;
 
           case 1:
-            tutorial.setTitle(currentCell.getStringCellValue());
+            dcReturnList.setSupNo((int) currentCell.getNumericCellValue());
             break;
 
           case 2:
-            tutorial.setDescription(currentCell.getStringCellValue());
+            dcReturnList.setBoxQty((int) currentCell.getNumericCellValue());
             break;
 
           case 3:
-            tutorial.setPublished(currentCell.getBooleanCellValue());
+            dcReturnList.setCreatedDate(currentCell.getDateCellValue());
             break;
 
           default:
@@ -112,12 +114,12 @@ public class ExcelHelper {
           cellIdx++;
         }
 
-        tutorials.add(tutorial);
+        dcReturnLists.add(dcReturnList);
       }
 
       workbook.close();
 
-      return tutorials;
+      return dcReturnLists;
     } catch (IOException e) {
       throw new RuntimeException("fail to parse Excel file: " + e.getMessage());
     }

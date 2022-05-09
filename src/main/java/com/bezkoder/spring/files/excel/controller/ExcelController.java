@@ -10,27 +10,24 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.bezkoder.spring.files.excel.helper.ExcelHelper;
 import com.bezkoder.spring.files.excel.message.ResponseMessage;
-import com.bezkoder.spring.files.excel.model.Tutorial;
+import com.bezkoder.spring.files.excel.model.DcReturnList;
 import com.bezkoder.spring.files.excel.service.ExcelService;
 
-@CrossOrigin("http://localhost:8081")
-@Controller
-@RequestMapping("/api/excel")
+//@CrossOrigin("http://localhost:8081")
+//@Controller
+//@RequestMapping("/api/excel")
+@RestController
 public class ExcelController {
 
   @Autowired
   ExcelService fileService;
 
-  @PostMapping("/upload")
+  @PostMapping("/dc/api/excel/upload")
   public ResponseEntity<ResponseMessage> uploadFile(@RequestParam("file") MultipartFile file) {
     String message = "";
 
@@ -50,24 +47,24 @@ public class ExcelController {
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseMessage(message));
   }
 
-  @GetMapping("/tutorials")
-  public ResponseEntity<List<Tutorial>> getAllTutorials() {
+  @GetMapping("/dc/api/excel/dc_return_list")
+  public ResponseEntity<List<DcReturnList>> getAllDcReturnLists() {
     try {
-      List<Tutorial> tutorials = fileService.getAllTutorials();
+      List<DcReturnList> dcReturnLists = fileService.getAllDcReturnLists();
 
-      if (tutorials.isEmpty()) {
+      if (dcReturnLists.isEmpty()) {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
       }
 
-      return new ResponseEntity<>(tutorials, HttpStatus.OK);
+      return new ResponseEntity<>(dcReturnLists, HttpStatus.OK);
     } catch (Exception e) {
       return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
-  @GetMapping("/download")
+  @GetMapping("/dc/api/excel/download")
   public ResponseEntity<Resource> getFile() {
-    String filename = "tutorials.xlsx";
+    String filename = "dc_return_list.xlsx";
     InputStreamResource file = new InputStreamResource(fileService.load());
 
     return ResponseEntity.ok()

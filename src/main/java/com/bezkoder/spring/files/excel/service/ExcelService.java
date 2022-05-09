@@ -9,31 +9,31 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.bezkoder.spring.files.excel.helper.ExcelHelper;
-import com.bezkoder.spring.files.excel.model.Tutorial;
-import com.bezkoder.spring.files.excel.repository.TutorialRepository;
+import com.bezkoder.spring.files.excel.model.DcReturnList;
+import com.bezkoder.spring.files.excel.repository.DcReturnListRepository;
 
 @Service
 public class ExcelService {
   @Autowired
-  TutorialRepository repository;
+  DcReturnListRepository repository;
 
   public void save(MultipartFile file) {
     try {
-      List<Tutorial> tutorials = ExcelHelper.excelToTutorials(file.getInputStream());
-      repository.saveAll(tutorials);
+      List<DcReturnList> dcReturnLists = ExcelHelper.excelToDcReturnLists(file.getInputStream());
+      repository.saveAll(dcReturnLists);
     } catch (IOException e) {
       throw new RuntimeException("fail to store excel data: " + e.getMessage());
     }
   }
 
   public ByteArrayInputStream load() {
-    List<Tutorial> tutorials = repository.findAll();
+    List<DcReturnList> dcReturnLists = repository.findAll();
 
-    ByteArrayInputStream in = ExcelHelper.tutorialsToExcel(tutorials);
+    ByteArrayInputStream in = ExcelHelper.dcReturnListsToExcel(dcReturnLists);
     return in;
   }
 
-  public List<Tutorial> getAllTutorials() {
+  public List<DcReturnList> getAllDcReturnLists() {
     return repository.findAll();
   }
 }
